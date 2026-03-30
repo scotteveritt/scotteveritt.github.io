@@ -77,8 +77,10 @@ BODY=$(echo "$BODY" | sed "s|src=\"/assets/|src=\"${SITE_URL}/assets/|g")
 # Strip hero image (first line if it's an image)
 BODY=$(echo "$BODY" | sed '1{/^!\[/d;}')
 
-# Strip video tags (Dev.to/Hashnode can't play hosted mp4s)
-BODY=$(echo "$BODY" | sed '/<video/d')
+# Convert <video> tags to animated GIF embeds (platforms can't play hosted mp4s)
+# Matches: <video ...><source src="URL.mp4" ...></video>
+# Replaces with: ![animation](URL.gif)
+BODY=$(echo "$BODY" | sed 's|<video[^>]*><source src="\([^"]*\)\.mp4"[^>]*></video>|![animation](\1.gif)|g')
 
 # ── Dev.to ──────────────────────────────────────────────────────
 

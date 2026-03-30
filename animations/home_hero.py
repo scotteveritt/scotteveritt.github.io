@@ -65,12 +65,8 @@ class HomeHero(Scene):
             line.set_stroke(MUTED_DARK, width=0.4, opacity=0.15)
             grid_lines.add(line)
 
-        self.play(
-            LaggedStart(*[FadeIn(d, scale=0.3) for d in dots], lag_ratio=0.003),
-            FadeIn(grid_lines),
-            run_time=1.0,
-        )
-        self.wait(0.5)
+        self.add(dots, grid_lines)
+        self.wait(1.0)
 
         # ── Stage 2: Warp into polar/radial layout ──
         polar_pts = []

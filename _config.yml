@@ -1,0 +1,26 @@
+title: Scott Everitt
+description: Systems programming, performance engineering, and the occasional deep dive.
+url: "https://scotteveritt.github.io"
+baseurl: ""
+
+permalink: /blog/:slug/
+
+header_pages: []
+
+author:
+  name: Scott Everitt
+
+twitter:
+  card: summary_large_image
+
+defaults:
+  - scope:
+      path: ""
+      type: "posts"
+    values:
+      image: /assets/og-image.png
+
+plugins:
+  - jekyll-feed
+  - jekyll-seo-tag
+  - jekyll-sitemap

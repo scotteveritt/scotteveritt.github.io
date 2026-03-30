@@ -234,9 +234,6 @@ video {
 // ── Home hero ──
 .home-hero {
   margin-bottom: 2.5rem;
-  border-radius: 10px;
-  overflow: hidden;
-  border: 1px solid $border;
 
   video {
     display: block;
@@ -244,6 +241,7 @@ video {
     margin: 0;
     border: none;
     border-radius: 0;
+    background: transparent;
   }
 }
 

@@ -22,7 +22,7 @@ config.frame_height = 4
 
 class HomeHero(Scene):
     def construct(self):
-        self.camera.background_color = BG
+        self.camera.background_color = "#1a1a1a"  # matches site $bg exactly
 
         rng = np.random.default_rng(42)
 
@@ -226,4 +226,4 @@ class HomeHero(Scene):
             run_time=2.0,
             rate_func=smooth,
         )
-        self.wait(0.3)
+        # No wait at end - last frame matches first frame for seamless loop

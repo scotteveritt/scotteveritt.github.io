@@ -17,7 +17,6 @@ permissions:
 jobs:
   cross-post:
     runs-on: ubuntu-latest
-    # Don't trigger on commits from the bot itself (avoids infinite loop)
     if: "!contains(github.event.head_commit.message, 'chore: add cross-post IDs')"
     steps:
       - uses: actions/checkout@v4
@@ -45,5 +44,5 @@ jobs:
         run: |
           for file in ${{ steps.detect.outputs.files }}; do
             echo "=== Cross-posting: $file ==="
-            bash .github/scripts/cross-post.sh "$file"
+            python3 .github/scripts/cross-post.py "$file"
           done

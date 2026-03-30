@@ -8,6 +8,8 @@ keywords: vector database, quantization, TurboQuant, Go, embeddings, approximate
 image: /assets/og-image.png
 author: Scott Everitt
 hero: /assets/hero-tqdb.png
+devto_id: 3432377
+hashnode_id: 69cad9b853fa69c3991f9955
 mentions:
   - name: tqdb
     repo: "https://github.com/scotteveritt/tqdb"

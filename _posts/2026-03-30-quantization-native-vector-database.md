@@ -58,7 +58,7 @@ It turns out Google published a paper at ICLR 2026 called [TurboQuant](https://a
 
 ### How TurboQuant works
 
-<video autoplay loop muted playsinline style="width:100%; border-radius:8px; margin:1em 0;"><source src="/assets/animations/quantize_pipeline.mp4" type="video/mp4"></video>
+<video autoplay loop muted playsinline style="width:100%; border-radius:8px; margin:1em 0;"><source src="/assets/animations/tqdb/quantize_pipeline.mp4" type="video/mp4"></video>
 
 The pipeline is three steps. Here's the actual code:
 
@@ -100,7 +100,7 @@ That's it. A binary search per coordinate. The boundaries were precomputed by a 
 
 ### The Lloyd-Max solver
 
-<video autoplay loop muted playsinline style="width:100%; border-radius:8px; margin:1em 0;"><source src="/assets/animations/lloyd_max.mp4" type="video/mp4"></video>
+<video autoplay loop muted playsinline style="width:100%; border-radius:8px; margin:1em 0;"><source src="/assets/animations/tqdb/lloyd_max.mp4" type="video/mp4"></video>
 
 Okay, where do those magical boundaries come from? The Lloyd-Max algorithm finds the optimal scalar quantizer for a given probability distribution. We know the distribution is N(0, 1/√d) after rotation, so we can solve for the optimal centroids and boundaries analytically.
 
@@ -164,7 +164,7 @@ This is... not great. Especially for an embeddable library where you want the wh
 
 ### Randomized Walsh-Hadamard Transform: 65 KB
 
-<video autoplay loop muted playsinline style="width:100%; border-radius:8px; margin:1em 0;"><source src="/assets/animations/hadamard_vs_qr.mp4" type="video/mp4"></video>
+<video autoplay loop muted playsinline style="width:100%; border-radius:8px; margin:1em 0;"><source src="/assets/animations/tqdb/hadamard_vs_qr.mp4" type="video/mp4"></video>
 
 I found a 2024 paper called [QuaRot](https://arxiv.org/abs/2404.00456) that showed the Randomized Hadamard Transform works just as well (and in practice, *better*) than a full random orthogonal matrix. The formula is simple:
 
@@ -257,7 +257,7 @@ The obvious approach: for each query, decompress every stored vector and compute
 
 ### The asymmetric trick: also 31ms, but differently
 
-<video autoplay loop muted playsinline style="width:100%; border-radius:8px; margin:1em 0;"><source src="/assets/animations/asymmetric_search.mp4" type="video/mp4"></video>
+<video autoplay loop muted playsinline style="width:100%; border-radius:8px; margin:1em 0;"><source src="/assets/animations/tqdb/asymmetric_search.mp4" type="video/mp4"></video>
 
 Here's the insight that makes the whole system work, borrowed from Google's [ScaNN](https://github.com/google-research/google-research/tree/master/scann): you don't need to decompress the stored vectors. You can compute the score *in rotated space*.
 
@@ -297,7 +297,7 @@ The brute-force search over 25K vectors at d=3072 takes **31ms**, already 2.3x f
 
 ## Making it faster: IVF partitioning
 
-<video autoplay loop muted playsinline style="width:100%; border-radius:8px; margin:1em 0;"><source src="/assets/animations/ivf_partitions.mp4" type="video/mp4"></video>
+<video autoplay loop muted playsinline style="width:100%; border-radius:8px; margin:1em 0;"><source src="/assets/animations/tqdb/ivf_partitions.mp4" type="video/mp4"></video>
 
 31ms is good. But we can do better by not looking at every vector.
 

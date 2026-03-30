@@ -55,3 +55,7 @@ jobs:
               "key": "${{ secrets.INDEXNOW_KEY }}",
               "urlList": ["https://scotteveritt.github.io/", "https://scotteveritt.github.io/sitemap.xml", "https://scotteveritt.github.io/feed.xml"]
             }' || echo "IndexNow notification failed (non-fatal)"
+      - name: Ping Google to recrawl sitemap
+        if: success()
+        run: |
+          curl -s "https://www.google.com/ping?sitemap=https://scotteveritt.github.io/sitemap.xml" || echo "Google ping failed (non-fatal)"

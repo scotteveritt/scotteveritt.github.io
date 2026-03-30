@@ -13,6 +13,7 @@
 #   SITE_URL  (e.g. https://scotteveritt.github.io)
 
 set -euo pipefail
+set -x
 
 POST_FILE="$1"
 UPDATED_FRONTMATTER=false
@@ -25,7 +26,7 @@ fi
 # ── Parse front matter ──────────────────────────────────────────
 
 fm_value() {
-  sed -n '/^---$/,/^---$/p' "$POST_FILE" | grep "^$1:" | head -1 | sed "s/^$1: *//; s/^\"//; s/\"$//"
+  sed -n '/^---$/,/^---$/p' "$POST_FILE" | grep "^$1:" | head -1 | sed "s/^$1: *//; s/^\"//; s/\"$//" || true
 }
 
 # Insert or update a frontmatter field

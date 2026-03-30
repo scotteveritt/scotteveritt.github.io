@@ -233,15 +233,16 @@ video {
 
 // ── Home hero ──
 .home-hero {
-  margin-bottom: 2.5rem;
+  margin: -1px 0 2.5rem;
 
   video {
     display: block;
-    width: 100%;
-    margin: 0;
+    width: calc(100% + 2px);
+    margin: -1px -1px 0;
     border: none;
     border-radius: 0;
-    background: transparent;
+    background: $bg;
+    mix-blend-mode: lighten;
   }
 }
 

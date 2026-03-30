@@ -1,31 +1,72 @@
 ---
 layout: default
 ---
-<article>
+<article itemscope itemtype="https://schema.org/TechArticle">
   <header class="post-header">
-    <h1 class="post-title">{{ page.title }}</h1>
-    <p class="post-meta">{{ page.date | date: "%b %-d, %Y" }}{% if page.author %} · {{ page.author }}{% endif %}</p>
+    <h1 class="post-title" itemprop="headline">{{ page.title }}</h1>
+    <p class="post-meta">
+      <time datetime="{{ page.date | date_to_xmlschema }}" itemprop="datePublished">{{ page.date | date: "%b %-d, %Y" }}</time>
+      {% if page.author %} · <span itemprop="author" itemscope itemtype="https://schema.org/Person"><span itemprop="name">{{ page.author }}</span></span>{% endif %}
+    </p>
+    {% if page.description %}<meta itemprop="description" content="{{ page.description }}">{% endif %}
   </header>
 
-  {{ content }}
+  <div itemprop="articleBody">
+    {{ content }}
+  </div>
 </article>
 
+<!-- Rich structured data for AI and search engines -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
-  "@type": "BlogPosting",
+  "@type": "TechArticle",
   "headline": {{ page.title | jsonify }},
   "description": {{ page.description | default: site.description | jsonify }},
   "datePublished": "{{ page.date | date_to_xmlschema }}",
+  "dateModified": "{{ page.last_modified_at | default: page.date | date_to_xmlschema }}",
   "author": {
     "@type": "Person",
-    "name": {{ page.author | default: site.author.name | jsonify }}
+    "name": {{ page.author | default: site.author.name | jsonify }},
+    "url": {{ site.url | jsonify }}
   },
   "publisher": {
-    "@type": "Person",
-    "name": {{ site.author.name | jsonify }}
+    "@type": "Organization",
+    "name": {{ site.title | jsonify }},
+    "logo": {
+      "@type": "ImageObject",
+      "url": "{{ '/assets/blog-avatar.png' | absolute_url }}"
+    }
   },
   "url": "{{ page.url | absolute_url }}",
-  "image": "{{ page.image | default: '/assets/og-image.png' | absolute_url }}"
+  "mainEntityOfPage": "{{ page.url | absolute_url }}",
+  "image": "{{ page.image | default: '/assets/og-image.png' | absolute_url }}",
+  {% if page.keywords %}"keywords": {{ page.keywords | jsonify }},{% endif %}
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "articleSection": "Engineering",
+  "wordCount": {{ content | number_of_words }}
 }
 </script>
+
+{% if page.faq %}
+<!-- FAQ structured data for rich snippets -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {% for item in page.faq %}
+    {
+      "@type": "Question",
+      "name": {{ item.q | jsonify }},
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": {{ item.a | jsonify }}
+      }
+    }{% unless forloop.last %},{% endunless %}
+    {% endfor %}
+  ]
+}
+</script>
+{% endif %}

@@ -1,0 +1,24 @@
+---
+---
+# Embedded Thought
+
+> {{ site.description }}
+
+Personal technical blog by {{ site.author.name }}.
+
+## Topics
+- Vector databases and approximate nearest neighbor search
+- Quantization algorithms (TurboQuant, Lloyd-Max, scalar quantization)
+- Go systems programming and performance engineering
+- Embedding models and semantic search
+- File format design and memory-mapped I/O
+
+## Posts
+{% for post in site.posts %}
+- [{{ post.title }}]({{ post.url | absolute_url }}): {{ post.description | default: post.excerpt | strip_html | truncate: 200 }}
+{% endfor %}
+
+## Links
+- Blog: {{ site.url }}
+- RSS: {{ site.url }}/feed.xml
+- Sitemap: {{ site.url }}/sitemap.xml

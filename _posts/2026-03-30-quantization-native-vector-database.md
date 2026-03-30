@@ -7,6 +7,15 @@ keywords: vector database, quantization, TurboQuant, Go, embeddings, approximate
 image: /assets/og-image.png
 author: Scott Everitt
 hero: /assets/hero-tqdb.png
+faq:
+  - q: "What is tqdb?"
+    a: "tqdb is a pure-Go, embeddable vector database that uses 4-bit quantization to compress vectors 8x and search them without decompression. It achieves 91.9% recall on learned embeddings like Gemini (d=3072) and opens in 10ms via memory-mapped I/O."
+  - q: "How does tqdb compare to chromem-go?"
+    a: "tqdb opens 620x faster (10ms vs 6.2s), searches 2.3-14x faster, uses 3.1x less disk (115 MB vs 362 MB), and stores everything in a single file instead of 25,411 files. The tradeoff is 91.9% recall instead of 100% exact search."
+  - q: "What is TurboQuant?"
+    a: "TurboQuant is a quantization algorithm from Google (ICLR 2026) that compresses vectors using random orthogonal rotation followed by Lloyd-Max scalar quantization. It requires no training data because the codebook is derived from the mathematical properties of unit vectors."
+  - q: "Does 4-bit quantization work on all types of vectors?"
+    a: "No. 4-bit TurboQuant works best on learned embeddings from models like Gemini and GloVe (80-92% recall). On SIFT descriptors it achieves only 50.9% recall at 4-bit, because SIFT vectors have a non-Gaussian distribution. Use 8-bit for non-embedding vector types."
 ---
 
 ![](/assets/hero-tqdb.png)

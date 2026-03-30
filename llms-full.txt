@@ -1,0 +1,21 @@
+---
+layout: null
+---
+# Embedded Thought - Full Content
+
+> {{ site.description }}
+
+{% for post in site.posts %}
+---
+
+## {{ post.title }}
+
+Published: {{ post.date | date: "%Y-%m-%d" }}
+Author: {{ post.author | default: site.author.name }}
+URL: {{ post.url | absolute_url }}
+Description: {{ post.description }}
+Keywords: {{ post.keywords }}
+
+{{ post.content | strip_html }}
+
+{% endfor %}

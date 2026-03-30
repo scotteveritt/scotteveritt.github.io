@@ -231,6 +231,29 @@ video {
   border: 1px solid $border;
 }
 
+// ── Home hero ──
+.home-hero {
+  margin-bottom: 2.5rem;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid $border;
+
+  video {
+    display: block;
+    width: 100%;
+    margin: 0;
+    border: none;
+    border-radius: 0;
+  }
+}
+
+.post-excerpt {
+  font-size: 0.88rem;
+  color: $text-muted;
+  margin-top: 0.2em;
+  line-height: 1.5;
+}
+
 // ── Hero image (first image in post) ──
 article > p:first-child img {
   width: 100%;

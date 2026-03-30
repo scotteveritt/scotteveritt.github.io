@@ -1,11 +1,18 @@
 ---
 layout: default
 ---
+<div class="home-hero">
+  <video autoplay loop muted playsinline>
+    <source src="/assets/home-hero.mp4" type="video/mp4">
+  </video>
+</div>
+
 <ul class="post-list">
   {% for post in site.posts %}
   <li>
     <span class="post-meta">{{ post.date | date: "%b %-d, %Y" }}</span>
     <h3><a href="{{ post.url | relative_url }}">{{ post.title }}</a></h3>
+    {% if post.description %}<p class="post-excerpt">{{ post.description | truncate: 160 }}</p>{% endif %}
   </li>
   {% endfor %}
 </ul>

@@ -1,0 +1,44 @@
+name: Cross-Post to Dev.to & Hashnode
+
+on:
+  push:
+    branches: ["master"]
+    paths:
+      - "_posts/**"
+  workflow_dispatch:
+    inputs:
+      post_file:
+        description: "Path to post file (e.g. _posts/2026-03-30-my-post.md)"
+        required: true
+
+jobs:
+  cross-post:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Detect new or changed posts
+        id: detect
+        run: |
+          if [ -n "${{ github.event.inputs.post_file }}" ]; then
+            echo "files=${{ github.event.inputs.post_file }}" >> $GITHUB_OUTPUT
+          else
+            FILES=$(git diff --name-only --diff-filter=AM HEAD~1 HEAD -- _posts/ | tr '\n' ' ')
+            echo "files=$FILES" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Cross-post each file
+        if: steps.detect.outputs.files != ''
+        env:
+          DEVTO_API_KEY: ${{ secrets.DEVTO_API_KEY }}
+          HASHNODE_API_KEY: ${{ secrets.HASHNODE_API_KEY }}
+          HASHNODE_PUBLICATION_ID: ${{ secrets.HASHNODE_PUBLICATION_ID }}
+          SITE_URL: "https://scotteveritt.github.io"
+          GITHUB_OUTPUT: ${{ github.output }}
+        run: |
+          for file in ${{ steps.detect.outputs.files }}; do
+            echo "=== Cross-posting: $file ==="
+            bash .github/scripts/cross-post.sh "$file"
+          done

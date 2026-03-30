@@ -1,5 +1,6 @@
 ---
 layout: post
+devto_id: 3432377
 title: "Building a Vector Database That Never Decompresses Your Vectors"
 date: 2026-03-30
 description: "How I built tqdb, a pure-Go embeddable vector database that stores vectors in 4-bit quantized form and searches them without decompressing. Honest benchmarks across four datasets, from 91.9% recall on learned embeddings to 50.9% on SIFT, and what I learned about when quantization works and when it doesn't."

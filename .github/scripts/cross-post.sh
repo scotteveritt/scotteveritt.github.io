@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 #
 # Cross-post a Jekyll markdown post to Dev.to and Hashnode.
+# On first publish, writes platform IDs back to frontmatter and commits.
+# On subsequent pushes, updates Dev.to (PUT), skips Hashnode (no update API).
+#
 # Usage: cross-post.sh <path-to-post.md>
 #
 # Expects env vars:
@@ -12,6 +15,7 @@
 set -euo pipefail
 
 POST_FILE="$1"
+UPDATED_FRONTMATTER=false
 
 if [ ! -f "$POST_FILE" ]; then
   echo "File not found: $POST_FILE"
@@ -20,9 +24,29 @@ fi
 
 # ── Parse front matter ──────────────────────────────────────────
 
-# Extract value from YAML front matter (simple single-line values)
 fm_value() {
   sed -n '/^---$/,/^---$/p' "$POST_FILE" | grep "^$1:" | head -1 | sed "s/^$1: *//; s/^\"//; s/\"$//"
+}
+
+# Insert or update a frontmatter field
+fm_set() {
+  local key="$1" value="$2"
+  if grep -q "^${key}:" "$POST_FILE"; then
+    sed -i "s|^${key}:.*|${key}: ${value}|" "$POST_FILE"
+  else
+    # Insert before closing ---
+    sed -i "/^---$/,/^---$/{
+      /^---$/{
+        x
+        s/.*//
+        x
+        b
+      }
+    }" "$POST_FILE"
+    # Simpler: insert on line 2 (after first ---)
+    sed -i "2a\\
+${key}: ${value}" "$POST_FILE"
+  fi
 }
 
 TITLE=$(fm_value title)
@@ -30,17 +54,17 @@ DESCRIPTION=$(fm_value description)
 DATE=$(fm_value date)
 DEVTO_ID=$(fm_value devto_id)
 HASHNODE_ID=$(fm_value hashnode_id)
-
-# Extract keywords → tags (first 4, lowercase, no spaces)
 KEYWORDS=$(fm_value keywords)
 
 # Build slug from filename
 SLUG=$(basename "$POST_FILE" .md | sed 's/^[0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\}-//')
 CANONICAL_URL="${SITE_URL}/blog/${SLUG}/"
 
-echo "Title:     $TITLE"
-echo "Slug:      $SLUG"
-echo "Canonical: $CANONICAL_URL"
+echo "Title:      $TITLE"
+echo "Slug:       $SLUG"
+echo "Canonical:  $CANONICAL_URL"
+echo "Dev.to ID:  ${DEVTO_ID:-<none>}"
+echo "Hashnode ID:${HASHNODE_ID:-<none>}"
 
 # ── Extract body (strip front matter) ───────────────────────────
 
@@ -64,7 +88,6 @@ if [ -n "${DEVTO_API_KEY:-}" ]; then
     sed 's/^ *//;s/ *$//;s/ //g' | tr '[:upper:]' '[:lower:]' | \
     awk '{printf "\"%s\",", $0}' | sed 's/,$//')
 
-  # Build JSON payload
   DEVTO_JSON=$(jq -n \
     --arg title "$TITLE" \
     --arg body "$BODY" \
@@ -78,38 +101,43 @@ if [ -n "${DEVTO_API_KEY:-}" ]; then
       -H "Content-Type: application/json" \
       -H "api-key: $DEVTO_API_KEY" \
       -d "$DEVTO_JSON")
+    echo "Dev.to updated: $(echo "$DEVTO_RESP" | jq -r '.url // empty')"
   else
     echo "Creating new Dev.to article..."
     DEVTO_RESP=$(curl -s -X POST "https://dev.to/api/articles" \
       -H "Content-Type: application/json" \
       -H "api-key: $DEVTO_API_KEY" \
       -d "$DEVTO_JSON")
-  fi
 
-  NEW_DEVTO_ID=$(echo "$DEVTO_RESP" | jq -r '.id // empty')
-  DEVTO_URL=$(echo "$DEVTO_RESP" | jq -r '.url // empty')
+    NEW_DEVTO_ID=$(echo "$DEVTO_RESP" | jq -r '.id // empty')
+    DEVTO_URL=$(echo "$DEVTO_RESP" | jq -r '.url // empty')
 
-  if [ -n "$NEW_DEVTO_ID" ]; then
-    echo "Dev.to: $DEVTO_URL (id: $NEW_DEVTO_ID)"
-    echo "DEVTO_ID=$NEW_DEVTO_ID" >> "$GITHUB_OUTPUT"
-  else
-    echo "Dev.to error: $DEVTO_RESP"
+    if [ -n "$NEW_DEVTO_ID" ]; then
+      echo "Dev.to created: $DEVTO_URL (id: $NEW_DEVTO_ID)"
+      fm_set "devto_id" "$NEW_DEVTO_ID"
+      UPDATED_FRONTMATTER=true
+    else
+      echo "Dev.to error: $DEVTO_RESP"
+    fi
   fi
 fi
 
 # ── Hashnode ────────────────────────────────────────────────────
 
 if [ -n "${HASHNODE_API_KEY:-}" ] && [ -n "${HASHNODE_PUBLICATION_ID:-}" ]; then
-  # Build tags (Hashnode wants [{name, slug}])
-  HASHNODE_TAGS=$(echo "$KEYWORDS" | tr ',' '\n' | head -4 | \
-    sed 's/^ *//;s/ *$//' | \
-    awk '{slug=$0; gsub(/ /,"-",slug); slug=tolower(slug); printf "{\"name\":\"%s\",\"slug\":\"%s\"},", $0, slug}' | \
-    sed 's/,$//')
+  if [ -n "$HASHNODE_ID" ] && [ "$HASHNODE_ID" != "" ]; then
+    echo "Hashnode already published ($HASHNODE_ID), skipping (no update API)."
+  else
+    echo "Creating new Hashnode article..."
 
-  # Escape body for JSON
-  ESCAPED_BODY=$(echo "$BODY" | jq -Rs .)
+    HASHNODE_TAGS=$(echo "$KEYWORDS" | tr ',' '\n' | head -4 | \
+      sed 's/^ *//;s/ *$//' | \
+      awk '{slug=$0; gsub(/ /,"-",slug); slug=tolower(slug); printf "{\"name\":\"%s\",\"slug\":\"%s\"},", $0, slug}' | \
+      sed 's/,$//')
 
-  HASHNODE_QUERY=$(cat <<GRAPHQL
+    ESCAPED_BODY=$(echo "$BODY" | jq -Rs .)
+
+    HASHNODE_QUERY=$(cat <<GRAPHQL
 mutation {
   publishPost(input: {
     publicationId: "${HASHNODE_PUBLICATION_ID}"
@@ -129,10 +157,6 @@ mutation {
 GRAPHQL
 )
 
-  if [ -n "$HASHNODE_ID" ] && [ "$HASHNODE_ID" != "" ]; then
-    echo "Hashnode article already exists ($HASHNODE_ID), skipping (no update API)."
-  else
-    echo "Creating new Hashnode article..."
     HASHNODE_RESP=$(curl -s -X POST "https://gql.hashnode.com" \
       -H "Content-Type: application/json" \
       -H "Authorization: $HASHNODE_API_KEY" \
@@ -142,12 +166,25 @@ GRAPHQL
     HASHNODE_URL=$(echo "$HASHNODE_RESP" | jq -r '.data.publishPost.post.url // empty')
 
     if [ -n "$NEW_HASHNODE_ID" ]; then
-      echo "Hashnode: $HASHNODE_URL (id: $NEW_HASHNODE_ID)"
-      echo "HASHNODE_ID=$NEW_HASHNODE_ID" >> "$GITHUB_OUTPUT"
+      echo "Hashnode created: $HASHNODE_URL (id: $NEW_HASHNODE_ID)"
+      fm_set "hashnode_id" "$NEW_HASHNODE_ID"
+      UPDATED_FRONTMATTER=true
     else
       echo "Hashnode error: $HASHNODE_RESP"
     fi
   fi
+fi
+
+# ── Commit updated frontmatter back ────────────────────────────
+
+if [ "$UPDATED_FRONTMATTER" = true ]; then
+  echo "Committing platform IDs back to frontmatter..."
+  git config user.name "cross-post-bot"
+  git config user.email "bot@scotteveritt.github.io"
+  git add "$POST_FILE"
+  git commit -m "chore: add cross-post IDs to $(basename "$POST_FILE")"
+  git push
+  echo "Frontmatter updated and pushed."
 fi
 
 echo "Cross-posting complete."

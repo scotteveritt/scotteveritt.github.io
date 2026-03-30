@@ -11,13 +11,19 @@ on:
         description: "Path to post file (e.g. _posts/2026-03-30-my-post.md)"
         required: true
 
+permissions:
+  contents: write
+
 jobs:
   cross-post:
     runs-on: ubuntu-latest
+    # Don't trigger on commits from the bot itself (avoids infinite loop)
+    if: "!contains(github.event.head_commit.message, 'chore: add cross-post IDs')"
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 2
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Detect new or changed posts
         id: detect
@@ -36,7 +42,6 @@ jobs:
           HASHNODE_API_KEY: ${{ secrets.HASHNODE_API_KEY }}
           HASHNODE_PUBLICATION_ID: ${{ secrets.HASHNODE_PUBLICATION_ID }}
           SITE_URL: "https://scotteveritt.github.io"
-          GITHUB_OUTPUT: ${{ github.output }}
         run: |
           for file in ${{ steps.detect.outputs.files }}; do
             echo "=== Cross-posting: $file ==="

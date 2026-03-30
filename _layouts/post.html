@@ -16,11 +16,10 @@ layout: default
   </div>
 </article>
 
-<!-- Rich structured data for AI and search engines -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
-  "@type": "TechArticle",
+  "@type": ["TechArticle", "BlogPosting"],
   "headline": {{ page.title | jsonify }},
   "description": {{ page.description | default: site.description | jsonify }},
   "datePublished": "{{ page.date | date_to_xmlschema }}",
@@ -28,16 +27,14 @@ layout: default
   "author": {
     "@type": "Person",
     "name": {{ page.author | default: site.author.name | jsonify }},
-    "url": {{ site.url | jsonify }}
+    "url": {{ site.url | jsonify }},
+    "sameAs": [
+      "https://github.com/scotteveritt",
+      "https://dev.to/scotteveritt",
+      "https://scotteveritt.hashnode.dev"
+    ]
   },
-  "publisher": {
-    "@type": "Organization",
-    "name": {{ site.title | jsonify }},
-    "logo": {
-      "@type": "ImageObject",
-      "url": "{{ '/assets/blog-avatar.png' | absolute_url }}"
-    }
-  },
+  "publisher": { "@id": "{{ site.url }}/#organization" },
   "url": "{{ page.url | absolute_url }}",
   "mainEntityOfPage": "{{ page.url | absolute_url }}",
   "image": "{{ page.image | default: '/assets/og-image.png' | absolute_url }}",
@@ -45,12 +42,23 @@ layout: default
   "inLanguage": "en",
   "isAccessibleForFree": true,
   "articleSection": "Engineering",
-  "wordCount": {{ content | number_of_words }}
+  "wordCount": {{ content | number_of_words }}{% if page.mentions %},
+  "mentions": [
+    {% for item in page.mentions %}
+    {
+      "@type": "SoftwareSourceCode",
+      "name": {{ item.name | jsonify }},
+      "codeRepository": {{ item.repo | jsonify }},
+      "programmingLanguage": {{ item.lang | jsonify }},
+      "description": {{ item.description | jsonify }},
+      "license": "https://opensource.org/licenses/MIT"
+    }{% unless forloop.last %},{% endunless %}
+    {% endfor %}
+  ]{% endif %}
 }
 </script>
 
 {% if page.faq %}
-<!-- FAQ structured data for rich snippets -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",

@@ -7,6 +7,11 @@ keywords: vector database, quantization, TurboQuant, Go, embeddings, approximate
 image: /assets/og-image.png
 author: Scott Everitt
 hero: /assets/hero-tqdb.png
+mentions:
+  - name: tqdb
+    repo: "https://github.com/scotteveritt/tqdb"
+    lang: Go
+    description: "Pure-Go embeddable vector database with 4-bit TurboQuant quantization, ScaNN-style IVF indexing, and memory-mapped search without decompression."
 faq:
   - q: "What is tqdb?"
     a: "tqdb is a pure-Go, embeddable vector database that uses 4-bit quantization to compress vectors 8x and search them without decompression. It achieves 91.9% recall on learned embeddings like Gemini (d=3072) and opens in 10ms via memory-mapped I/O."

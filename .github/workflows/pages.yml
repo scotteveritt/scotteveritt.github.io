@@ -45,3 +45,13 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+      - name: Notify IndexNow (Bing/Yandex fast indexing)
+        if: success()
+        run: |
+          curl -s -X POST "https://api.indexnow.org/indexnow" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "host": "scotteveritt.github.io",
+              "key": "${{ secrets.INDEXNOW_KEY }}",
+              "urlList": ["https://scotteveritt.github.io/", "https://scotteveritt.github.io/sitemap.xml", "https://scotteveritt.github.io/feed.xml"]
+            }' || echo "IndexNow notification failed (non-fatal)"

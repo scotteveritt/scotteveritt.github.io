@@ -124,12 +124,12 @@ def post_to_devto(fm, body):
         "tags": tags,
     }
 
-    # Set cover image if hero is defined
-    if fm.get("hero"):
-        hero_url = fm["hero"]
-        if hero_url.startswith("/"):
-            hero_url = SITE_URL + hero_url
-        article["main_image"] = hero_url
+    # Set cover image (prefer cover, fall back to hero)
+    cover = fm.get("cover") or fm.get("hero")
+    if cover:
+        if cover.startswith("/"):
+            cover = SITE_URL + cover
+        article["main_image"] = cover
 
     payload = {"article": article}
 
@@ -198,12 +198,12 @@ def post_to_hashnode(fm, body):
         "tags": tags,
     }
 
-    # Set cover image if hero is defined
-    if fm.get("hero"):
-        hero_url = fm["hero"]
-        if hero_url.startswith("/"):
-            hero_url = SITE_URL + hero_url
-        input_data["coverImageOptions"] = {"coverImageURL": hero_url}
+    # Set cover image (prefer cover, fall back to hero)
+    cover = fm.get("cover") or fm.get("hero")
+    if cover:
+        if cover.startswith("/"):
+            cover = SITE_URL + cover
+        input_data["coverImageOptions"] = {"coverImageURL": cover}
 
     variables = {"input": input_data}
 
